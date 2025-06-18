@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "FACEIT Level for Steam",
+  "version": "1.2",
+  "description": "Displays a user's FACEIT level and icon on their Steam profile.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://faceitfinderextension.vercel.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://steamcommunity.com/profiles/*",
+        "https://steamcommunity.com/id/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["images/faceit*.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
