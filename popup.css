@@ -1,45 +1,41 @@
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
-    background-color: #1b2838; /* Steam dark blue */
-    color: #c7d5e0; /* Steam light text */
-    width: 250px;
+/* Add these new styles to your existing popup.css file */
+
+hr {
+    border: none;
+    border-top: 1px solid #3a4e66;
+    margin: 20px 0;
 }
 
-.container {
-    padding: 15px;
+.update-section {
     text-align: center;
 }
 
-.logo {
-    width: 48px;
-    height: 48px;
+.info-text {
+    font-size: 12px;
+    color: #8f98a0; /* A dimmer text color */
+    margin-top: 0;
     margin-bottom: 10px;
 }
 
-h1 {
-    font-size: 16px;
-    margin: 0 0 10px 0;
-    color: #ffffff;
-}
-
-p {
+#manual-update-btn {
+    width: 100%;
+    padding: 8px;
     font-size: 13px;
-    margin-bottom: 20px;
-}
-
-.donate-button {
-    display: block;
-    text-decoration: none;
-    background-color: #5c7e10; /* A green color, like Steam's buttons */
-    color: #ffffff;
-    padding: 10px 15px;
-    border-radius: 3px;
     font-weight: bold;
-    font-size: 14px;
+    color: #ffffff;
+    background-color: #3a4e66; /* A secondary button color */
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
-.donate-button:hover {
-    background-color: #6b9312; /* A slightly lighter green for hover */
+#manual-update-btn:hover:not(:disabled) {
+    background-color: #4e6885;
+}
+
+#manual-update-btn:disabled {
+    background-color: #2a3a4a;
+    color: #6e7b88;
+    cursor: not-allowed;
 }

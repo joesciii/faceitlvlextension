@@ -1,6 +1,6 @@
 // An "Immediately Invoked Function Expression" to use async/await
 (async () => {
-  // --- Helper function to get the 64-bit Steam ID  ---
+  // --- Helper function to get the 64-bit Steam ID (this stays the same) ---
   const getSteamID64 = () => {
     const url = window.location.href;
     const profileMatch = url.match(/steamcommunity\.com\/profiles\/(\d{17})/);
@@ -15,7 +15,7 @@
     return null;
   };
 
-  // --- NEW: Helper function to get data from cache ---
+  // --- Helper function to get data from cache ---
   const getCachedData = async (steamId64) => {
     try {
       const key = `faceit_${steamId64}`;
@@ -29,20 +29,19 @@
 
         if (cacheAge < twentyFourHoursInMillis) {
           console.log(`Using cached FACEIT data for Steam ID: ${steamId64}`);
-          return cachedEntry.data; // Return the fresh data
+          return cachedEntry.data;
         } else {
-          console.log(`Cache expired for Steam ID: ${steamId64}. Fetching new data.`);
-          // Optional: remove the expired entry
+          console.log(`Cache expired for Steam ID: ${steamId64}.`);
           await chrome.storage.local.remove([key]);
         }
       }
     } catch (error) {
       console.error("Error reading from cache:", error);
     }
-    return null; // Return null if no cache, cache is expired, or an error occurs
+    return null;
   };
 
-  // --- NEW: Helper function to set data in cache ---
+  // --- Helper function to set data in cache ---
   const setCachedData = async (steamId64, data) => {
     try {
       const key = `faceit_${steamId64}`;
@@ -57,15 +56,8 @@
     }
   };
 
-  // --- Helper function to get FACEIT data ---
-  const getFaceitData = async (steamId64) => {
-    // 1. Try to get data from cache first
-    const cachedData = await getCachedData(steamId64);
-    if (cachedData) {
-      return cachedData;
-    }
-
-    // 2. If not in cache, fetch from the API
+  // --- Helper function to fetch data directly from the API ---
+  const fetchFromApi = async (steamId64) => {
     console.log(`Fetching fresh FACEIT data for Steam ID: ${steamId64}`);
     const proxyApiUrl = `https://faceitfinderextension.vercel.app/api/faceit-data?steamId=${steamId64}`;
     try {
@@ -75,12 +67,9 @@
         return null;
       }
       const playerData = await response.json();
-
-      // 3. Save the newly fetched data to the cache
       if (playerData) {
         await setCachedData(steamId64, playerData);
       }
-
       return playerData;
     } catch (error) {
       console.error("Failed to fetch from proxy server:", error);
@@ -88,42 +77,75 @@
     }
   };
 
-  // --- Main logic  ---
-  const steamId = getSteamID64();
-  if (!steamId) {
-    console.log("Steam ID not found on this page.");
-    return;
-  }
-
-  const playerData = await getFaceitData(steamId);
-
-  if (playerData && playerData.games && playerData.games.cs2 && playerData.games.cs2.skill_level) {
-    const level = playerData.games.cs2.skill_level;
-    const nickname = playerData.nickname;
-    const faceitUrl = playerData.faceit_url.replace('{lang}', 'en');
-
-    const targetElement = document.querySelector('.actual_persona_name');
-    if (targetElement) {
-      // Avoid adding the icon if it already exists
-      if (document.getElementById(`faceit-link-${steamId}`)) return;
-
-      const icon = document.createElement('img');
-      icon.src = chrome.runtime.getURL(`images/faceit${level}.png`);
-      icon.title = `FACEIT Level ${level} (${nickname})`;
-      icon.style.width = '24px';
-      icon.style.height = '24px';
-      icon.style.marginLeft = '8px';
-      icon.style.verticalAlign = 'middle';
-
-      const link = document.createElement('a');
-      link.href = faceitUrl;
-      link.target = '_blank';
-      link.id = `faceit-link-${steamId}`; // Add an ID to prevent duplicates
-      link.appendChild(icon);
-
-      targetElement.insertAdjacentElement('afterend', link);
+  // --- Helper function to get FACEIT data (uses cache) ---
+  const getFaceitData = async (steamId64) => {
+    const cachedData = await getCachedData(steamId64);
+    if (cachedData) {
+      return cachedData;
     }
+    return await fetchFromApi(steamId64);
+  };
+
+  // --- Function to display the FACEIT icon on the page ---
+  const displayFaceitIcon = (steamId, playerData) => {
+    // First, remove any existing icon to prevent duplicates
+    const existingLink = document.getElementById(`faceit-link-${steamId}`);
+    if (existingLink) {
+      existingLink.remove();
+    }
+
+    if (playerData && playerData.games && playerData.games.cs2 && playerData.games.cs2.skill_level) {
+      const level = playerData.games.cs2.skill_level;
+      const nickname = playerData.nickname;
+      const faceitUrl = playerData.faceit_url.replace('{lang}', 'en');
+
+      const targetElement = document.querySelector('.actual_persona_name');
+      if (targetElement) {
+        const icon = document.createElement('img');
+        icon.src = chrome.runtime.getURL(`images/faceit${level}.png`);
+        icon.title = `FACEIT Level ${level} (${nickname})`;
+        icon.style.width = '24px';
+        icon.style.height = '24px';
+        icon.style.marginLeft = '8px';
+        icon.style.verticalAlign = 'middle';
+
+        const link = document.createElement('a');
+        link.href = faceitUrl;
+        link.target = '_blank';
+        link.id = `faceit-link-${steamId}`;
+        link.appendChild(icon);
+
+        targetElement.insertAdjacentElement('afterend', link);
+      }
+    } else {
+      console.log(`No FACEIT CS2 data found for Steam ID: ${steamId}`);
+    }
+  };
+
+  // --- Main logic ---
+  const steamId = getSteamID64();
+  if (steamId) {
+    const playerData = await getFaceitData(steamId);
+    displayFaceitIcon(steamId, playerData);
   } else {
-    console.log(`No FACEIT CS2 data found for Steam ID: ${steamId}`);
+    console.log("Steam ID not found on this page.");
   }
+
+  // --- NEW: Listen for messages from the popup ---
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'FORCE_REFRESH') {
+      const currentSteamId = getSteamID64();
+      if (currentSteamId) {
+        (async () => {
+          const newPlayerData = await fetchFromApi(currentSteamId);
+          displayFaceitIcon(currentSteamId, newPlayerData);
+          sendResponse({ success: true });
+        })();
+        return true; // Indicates that the response is sent asynchronously
+      } else {
+        sendResponse({ success: false, error: "No SteamID found on page." });
+      }
+    }
+  });
+
 })();
