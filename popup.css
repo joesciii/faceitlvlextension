@@ -1,20 +1,71 @@
-/* Add these new styles to your existing popup.css file */
+/* Base body and container styles */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: #1b2838; /* Steam dark blue */
+    color: #c7d5e0; /* Steam light text */
+    width: 250px; /* This sets the correct width of the popup */
+}
 
+.container {
+    padding: 15px;
+    text-align: center;
+}
+
+/* Logo and main title */
+.logo {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 16px;
+    margin: 0 0 10px 0;
+    color: #ffffff;
+}
+
+/* General paragraph styling */
+p {
+    font-size: 13px;
+    line-height: 1.4;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* Donation button */
+.donate-button {
+    display: block;
+    text-decoration: none;
+    background-color: #5c7e10; /* A green color, like Steam's buttons */
+    color: #ffffff;
+    padding: 10px 15px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.donate-button:hover {
+    background-color: #6b9312; /* A slightly lighter green for hover */
+}
+
+/* Divider line */
 hr {
     border: none;
     border-top: 1px solid #3a4e66;
     margin: 20px 0;
 }
 
+/* Manual update section */
 .update-section {
     text-align: center;
 }
 
-.info-text {
+.update-section .info-text {
     font-size: 12px;
     color: #8f98a0; /* A dimmer text color */
-    margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 10px; /* Specific margin for this text */
 }
 
 #manual-update-btn {
@@ -28,6 +79,7 @@ hr {
     border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    box-sizing: border-box; /* Ensures padding doesn't add to the width */
 }
 
 #manual-update-btn:hover:not(:disabled) {
