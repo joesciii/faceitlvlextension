@@ -37,7 +37,7 @@ p {
 .donate-button {
     display: block;
     text-decoration: none;
-    background-color: #5c7e10; /* A green color, like Steam's buttons */
+    background-color: #5c7e10;
     color: #ffffff;
     padding: 10px 15px;
     border-radius: 3px;
@@ -112,7 +112,7 @@ hr {
     display: none;
 }
 
-/* Styling the label to look like a switch */
+/* Styling label*/
 .toggle-switch label {
     cursor: pointer;
     width: 40px;
@@ -145,10 +145,10 @@ hr {
     left: calc(100% - 2px);
     transform: translateX(-100%);
 }
-/* Styling for the re-added thank you message */
+/* Styling for thank you message */
 .thanks-text {
     font-size: 13px;
     margin-top: 0;
-    margin-bottom: 15px; /* Adds nice spacing above the button */
+    margin-bottom: 15px; /* Adds spacing above the button */
     color: #c7d5e0;
 }
