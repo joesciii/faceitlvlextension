@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "FACEIT Level for Steam",
   "version": "1.3",
-  "description": "Displays a user's FACEIT level and icon on their Steam profile.",
+  "description": "Displays a user's FACEIT level and icon on their Steam profile. Simple, free and unaffiliated.",
   "permissions": [
     "storage"
   ],
