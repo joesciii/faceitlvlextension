@@ -1,42 +1,61 @@
 document.addEventListener('DOMContentLoaded', () => {
     const updateButton = document.getElementById('manual-update-btn');
+    const eloToggle = document.getElementById('elo-toggle');
 
-    // Ask the content script for the current page's status
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        const currentTab = tabs[0];
-        if (!currentTab) return;
+    // --- Main function to update the popup's state ---
+    const updatePopupState = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const currentTab = tabs[0];
+            if (!currentTab) return;
 
-        // Send a message to the content script to get its status
-        chrome.tabs.sendMessage(currentTab.id, { type: 'GET_PAGE_STATUS' }, (response) => {
-            // Check for errors (e.g., content script not injected yet)
-            if (chrome.runtime.lastError) {
-                console.warn("Could not connect to content script:", chrome.runtime.lastError.message);
-                updateButton.disabled = true;
-                updateButton.textContent = 'Go to a Steam Profile';
-                return;
-            }
-
-            if (response && response.status === 'HAS_STEAM_ID') {
-                updateButton.disabled = false; // Enable the button
-                if (response.isCached) {
-                    updateButton.textContent = 'Refresh Cached Data';
-                } else {
-                    // Data is fresh, so disable the button as it's not needed
-                    updateButton.textContent = 'Data is Up-to-Date';
+            // Ask the content script for its status
+            chrome.tabs.sendMessage(currentTab.id, { type: 'GET_PAGE_STATUS' }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.warn("Could not connect to content script:", chrome.runtime.lastError.message);
                     updateButton.disabled = true;
+                    updateButton.textContent = 'Go to a Steam Profile';
+                    return;
                 }
-            } else {
-                // No Steam ID found on the page
-                updateButton.disabled = true;
-                updateButton.textContent = 'Go to a Steam Profile';
-            }
+
+                if (response && response.status === 'HAS_STEAM_ID') {
+                    updateButton.disabled = false;
+                    if (response.isCached) {
+                        updateButton.textContent = 'Refresh Cached Data';
+                    } else {
+                        updateButton.textContent = 'Data is Up-to-Date';
+                        updateButton.disabled = true;
+                    }
+                } else {
+                    updateButton.disabled = true;
+                    updateButton.textContent = 'Go to a Steam Profile';
+                }
+            });
+        });
+    };
+
+    // --- Load saved ELO toggle setting ---
+    chrome.storage.sync.get(['showElo'], (result) => {
+        eloToggle.checked = !!result.showElo;
+    });
+
+    // --- Event Listeners ---
+
+    // Save setting when toggle is changed
+    eloToggle.addEventListener('change', () => {
+        const showElo = eloToggle.checked;
+        chrome.storage.sync.set({ showElo: showElo }, () => {
+            // Tell the active tab that the setting has changed so it can update the view
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(tabs[0].id, { type: 'SETTING_CHANGED' });
+                }
+            });
         });
     });
 
-    // Add click listener for the button (this logic remains the same)
+    // Manual update button click
     updateButton.addEventListener('click', () => {
         if (updateButton.disabled) return;
-
         updateButton.disabled = true;
         updateButton.textContent = 'Updating...';
 
@@ -44,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
             chrome.tabs.sendMessage(tabs[0].id, { type: 'FORCE_REFRESH' }, (response) => {
                 if (chrome.runtime.lastError) {
                     updateButton.textContent = 'Error: Refresh page';
-                    console.error(chrome.runtime.lastError.message);
                 } else if (response && response.success) {
                     updateButton.textContent = 'Updated!';
                     setTimeout(() => window.close(), 1200);
@@ -54,4 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    // --- Initial setup ---
+    updatePopupState();
 });

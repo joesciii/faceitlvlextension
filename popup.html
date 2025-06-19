@@ -9,19 +9,35 @@
     <div class="container">
         <img src="images/icon48.png" alt="Extension Icon" class="logo">
         <h1>FACEIT Level for Steam</h1>
-        <p>Thanks for using the extension! Your support helps keep it updated.</p>
-        <a href="https://coff.ee/crumpets" target="_blank" class="donate-button">
-            ☕ Buy me a coffee
-        </a>
+        
+        <!-- Settings Section -->
+        <div class="settings-section">
+            <div class="toggle-switch">
+                <input type="checkbox" id="elo-toggle">
+                <label for="elo-toggle"></label>
+                <span>Show ELO next to level</span>
+            </div>
+        </div>
+
         <hr>
+
         <div class="update-section">
             <p class="info-text">
                 Rank outdated? Data is cached for 24 hours.
             </p>
             <button id="manual-update-btn" disabled>Manual Update</button>
         </div>
+        
+        <hr>
+
+        <!-- This is the re-added line -->
+        <p class="thanks-text">Thanks for using the extension! Your support helps keep it updated.</p>
+
+        <a href="https://coff.ee/crumpets" target="_blank" class="donate-button">
+            ☕ Buy me a coffee
+        </a>
     </div>
-    <!-- Link the new JavaScript file -->
+    <!-- Link the JavaScript file -->
     <script src="popup.js"></script>
 </body>
 </html>
